@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sea to Sky — 21–25 October</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=Newsreader:opsz,wght@6..72,300;6..72,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<style>
+:root{
+  --water:#2E5B6B; --granite:#5C6B6E; --paper:#EEF0EB; --card:#F7F8F5;
+  --lichen:#B4821F; --moss:#4F6A45; --rust:#9C4E2B;
+  --line:rgba(14,30,34,.14); --line-firm:rgba(14,30,34,.3);
+  --ink:#0E1E22; --ink-soft:#4A5B5E;
+  --sans:'Archivo',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --serif:'Newsreader',Georgia,serif;
+  box-sizing:border-box;
+}
+html[data-theme="dark"]{
+  --water:#3D7185; --granite:#7E8C8F; --paper:#0B1619; --card:#132226;
+  --lichen:#D9A33C; --moss:#7EA06F; --rust:#C97A52;
+  --line:rgba(217,223,214,.16); --line-firm:rgba(217,223,214,.34);
+  --ink:#E3E8E2; --ink-soft:#9AA9AB;
+}
+*,*::before,*::after{box-sizing:inherit}
+html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);font-size:16px;line-height:1.5;-webkit-font-smoothing:antialiased}
+a{color:inherit}
+button,input,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--lichen);outline-offset:2px}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+.wrap{max-width:1240px;margin:0 auto;padding:0 20px 80px}
+
+.mast{padding:34px 0 20px;border-bottom:1.5px solid var(--line-firm)}
+.mast h1{font-weight:700;font-size:clamp(30px,5.4vw,52px);letter-spacing:-.025em;line-height:1.02;margin:0 0 10px}
+.mast .sub{font-family:var(--serif);font-size:clamp(16px,2.1vw,20px);font-weight:300;color:var(--ink-soft);margin:0;max-width:62ch}
+.mastbar{display:flex;flex-wrap:wrap;gap:8px 22px;margin-top:18px;align-items:center}
+.stat{display:flex;align-items:baseline;gap:7px}
+.stat b{font-weight:600;font-size:19px;letter-spacing:-.01em}
+.stat span{font-size:13px;color:var(--ink-soft)}
+.tools{margin-left:auto;display:flex;gap:7px;flex-wrap:wrap}
+.tools button{background:none;border:1px solid var(--line-firm);border-radius:999px;padding:5px 13px;font-size:12.5px;cursor:pointer;color:var(--ink-soft)}
+.tools button:hover{border-color:var(--lichen);color:var(--lichen)}
+
+h2.lbl{font-size:13.5px;font-weight:600;letter-spacing:.03em;margin:0 0 12px;color:var(--ink-soft)}
+.board{margin:26px 0 8px}
+.days{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:9px}
+@media(max-width:820px){.days{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:430px){.days{grid-template-columns:1fr}}
+.day{background:var(--card);border:1px solid var(--line);border-top:3px solid var(--dc);border-radius:3px;padding:11px 12px 13px;min-height:128px}
+.day.fixed{background:transparent;border-style:dashed;border-top-style:solid}
+.dh{display:flex;justify-content:space-between;align-items:baseline;gap:6px}
+.dn{font-weight:600;font-size:15px;letter-spacing:-.01em}
+.dt{font-size:11.5px;color:var(--ink-soft);font-variant-numeric:tabular-nums}
+.dtag{font-size:11.5px;color:var(--dc);font-weight:500;margin:1px 0 8px}
+.day ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:3px}
+.day li{font-size:13px;line-height:1.35;padding:3px 6px;border-radius:2px;background:color-mix(in srgb,var(--dc) 14%,transparent);cursor:pointer}
+.day li:hover{background:color-mix(in srgb,var(--dc) 28%,transparent)}
+.day .empty{font-family:var(--serif);font-style:italic;font-size:13.5px;color:var(--ink-soft);background:none!important;cursor:default}
+
+.split{display:grid;grid-template-columns:minmax(0,1fr) 400px;gap:34px;margin-top:36px;align-items:start}
+@media(max-width:980px){.split{grid-template-columns:1fr}}
+.mapcol{position:sticky;top:14px;order:2}
+@media(max-width:980px){.mapcol{position:static;order:0}}
+#map{height:min(76vh,720px);border-radius:3px;border:1px solid var(--line-firm);background:var(--card)}
+@media(max-width:980px){#map{height:58vh}}
+.legend{display:flex;flex-wrap:wrap;gap:5px 12px;margin-top:9px;font-size:11.5px;color:var(--ink-soft)}
+.legend i{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px;vertical-align:0}
+.credit{font-size:11px;color:var(--ink-soft);margin-top:7px;line-height:1.4}
+.leaflet-popup-content{margin:9px 11px;font-family:var(--sans);font-size:13px;min-width:170px}
+.leaflet-popup-content img{width:100%;height:92px;object-fit:cover;border-radius:2px;margin-bottom:6px;display:block}
+.leaflet-popup-content b{font-size:14px;display:block;margin-bottom:2px}
+.leaflet-popup-content em{font-style:normal;color:#555;font-size:11.5px;display:block;margin-bottom:5px}
+
+.stops{min-width:0;order:1}
+.filters{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px}
+.filters button{background:none;border:1px solid var(--line-firm);border-radius:999px;padding:4px 12px;font-size:12.5px;cursor:pointer;color:var(--ink-soft)}
+.filters button[aria-pressed="true"]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+
+.stop{border-bottom:1px solid var(--line);padding:20px 0 22px;scroll-margin-top:16px}
+.stop:first-of-type{border-top:1px solid var(--line)}
+.stop.hidden{display:none}
+.stop.sel{background:color-mix(in srgb,var(--lichen) 9%,transparent);box-shadow:-14px 0 0 color-mix(in srgb,var(--lichen) 9%,transparent),14px 0 0 color-mix(in srgb,var(--lichen) 9%,transparent)}
+.sthead{display:flex;gap:12px;align-items:flex-start}
+.stdot{flex:0 0 auto;width:13px;height:13px;border-radius:50%;margin-top:6px;background:var(--sc);border:2px solid var(--sc)}
+.stdot.un{background:transparent;border-color:var(--line-firm)}
+.sttitle h3{margin:0;font-size:20px;font-weight:600;letter-spacing:-.018em;line-height:1.2;display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.badge{font-size:10.5px;font-weight:700;letter-spacing:.04em;color:#fff;background:var(--lichen);border-radius:2px;padding:2px 7px;white-space:nowrap;text-transform:uppercase}
+.stop.star{border-left:3px solid var(--lichen);padding-left:13px;margin-left:-16px}
+.day li.star::before{content:'\2605';color:var(--lichen);margin-right:4px;font-size:11px}
+.warn{font-size:12.5px;color:var(--rust);margin:9px 0 0;line-height:1.4;border-left:2px solid var(--rust);padding-left:9px}
+.leaflet-control-layers{font-family:var(--sans);font-size:12.5px}
+.leaflet-control-layers label{margin:1px 0}
+.stmeta{font-size:12.5px;color:var(--ink-soft);margin-top:3px;font-variant-numeric:tabular-nums}
+.strip{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin:13px 0 0}
+.strip img{width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:2px;display:block;background:var(--card);cursor:zoom-in}
+.stbody{font-family:var(--serif);font-weight:300;font-size:16.5px;line-height:1.55;margin:12px 0 0;max-width:64ch}
+.stnote{font-size:13.5px;color:var(--rust);margin-top:7px;max-width:64ch;line-height:1.45}
+.strow{display:flex;flex-wrap:wrap;gap:14px;align-items:center;margin-top:13px}
+.seg{display:inline-flex;border:1px solid var(--line-firm);border-radius:3px;overflow:hidden}
+.seg button{background:none;border:0;border-right:1px solid var(--line);padding:4px 9px;font-size:12px;cursor:pointer;color:var(--ink-soft);font-weight:500}
+.seg button:last-child{border-right:0}
+.seg button:hover{background:var(--card)}
+.seg button[aria-pressed="true"]{background:var(--bc);color:#fff;font-weight:600}
+.links{display:flex;gap:13px;flex-wrap:wrap;font-size:12.5px}
+.links a{color:var(--water);text-decoration:none;border-bottom:1px solid color-mix(in srgb,var(--water) 40%,transparent)}
+.links a:hover{border-bottom-color:var(--water)}
+.stop textarea{width:100%;max-width:64ch;min-height:54px;resize:vertical;background:var(--card);border:1px solid var(--line);border-radius:3px;padding:8px 10px;font-size:14px;font-family:var(--serif);font-weight:300;margin-top:12px;display:block}
+.stop textarea::placeholder{color:var(--ink-soft);font-style:italic}
+
+.lightbox{position:fixed;inset:0;background:rgba(6,15,18,.94);z-index:9999;display:flex;align-items:center;justify-content:center;padding:26px;cursor:zoom-out}
+.lightbox img{max-width:100%;max-height:100%;object-fit:contain;border-radius:2px}
+
+.kit{margin-top:46px;display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:30px}
+.kit ul{list-style:none;margin:0;padding:0}
+.check li{display:flex;gap:9px;align-items:flex-start;padding:7px 0;border-bottom:1px solid var(--line)}
+.check input{margin:3px 0 0;width:15px;height:15px;accent-color:var(--lichen);flex:0 0 auto;cursor:pointer}
+.check label{font-size:14.5px;line-height:1.4;cursor:pointer}
+.check .why{display:block;font-size:12.5px;color:var(--ink-soft);margin-top:2px}
+.check li.done label{color:var(--ink-soft);text-decoration:line-through;text-decoration-color:var(--line-firm)}
+.facts li{padding:7px 0;border-bottom:1px solid var(--line);font-size:14.5px;line-height:1.45}
+.facts b{font-weight:600}
+.facts span{display:block;color:var(--ink-soft);font-size:12.5px;margin-top:2px}
+
+.foot{margin-top:34px;padding-top:14px;border-top:1.5px solid var(--line-firm);display:flex;flex-wrap:wrap;gap:12px;align-items:center;font-size:12.5px;color:var(--ink-soft)}
+.foot button{background:none;border:1px solid var(--line-firm);border-radius:3px;padding:4px 11px;font-size:12.5px;cursor:pointer;color:var(--ink-soft)}
+.foot button:hover{border-color:var(--rust);color:var(--rust)}
+
+@media print{
+  .tools,.filters,.seg,.foot,.mapcol,.lightbox{display:none!important}
+  .split{grid-template-columns:1fr}
+  .stop{break-inside:avoid;page-break-inside:avoid}
+  body{background:#fff;color:#000;font-size:11pt}
+  .strip{grid-template-columns:repeat(3,1fr)}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="mast">
+    <h1>Sea to Sky</h1>
+    <p class="sub">Five days out of Vancouver airport, all four nights in Whistler. Wednesday and Sunday are fixed by the flights. The three in between are yours to shuffle — decide each one the night before, off the forecast.</p>
+    <div class="mastbar">
+      <div class="stat"><b>21–25 Oct</b><span>Wed to Sun</span></div>
+      <div class="stat"><b id="nchosen">—</b><span>stops chosen</span></div>
+      <div class="stat"><b id="ntodo">—</b><span>still undecided</span></div>
+      <div class="tools">
+        <button type="button" id="btheme">Dark</button>
+        <button type="button" id="bexport">Save plan file</button>
+        <button type="button" id="bimport">Load plan file</button>
+        <button type="button" id="bprint">Print</button>
+      </div>
+    </div>
+  </header>
+
+  <section class="board">
+    <h2 class="lbl">The five days</h2>
+    <div class="days" id="days"></div>
+  </section>
+
+  <div class="split">
+    <div class="mapcol">
+      <div id="map"></div>
+      <div class="legend" id="legend"></div>
+      <p class="warn" id="tilewarn" hidden>Tiles aren't loading. Switch basemap using the control on the map, or check your connection.</p>
+      <p class="credit">Basemaps © Esri and contributors; "Plain" © OpenStreetMap contributors and CARTO. Place photos from Google Maps contributors — they load from Google's servers, so they need a connection and may change over time.</p>
+    </div>
+    <section class="stops">
+      <h2 class="lbl">Every stop, south to north</h2>
+      <div class="filters" id="filters"></div>
+      <div id="list"></div>
+    </section>
+  </div>
+
+  <section class="kit">
+    <div>
+      <h2 class="lbl">Before you go</h2>
+      <ul class="check" id="check"></ul>
+    </div>
+    <div>
+      <h2 class="lbl">Worth remembering</h2>
+      <ul class="facts">
+        <li><b>Winter tires are the law on Highway 99 from 1 October.</b><span>Tires marked M+S or with the mountain-snowflake symbol. Rental desks at YVR don't assign them by default — say it out loud when you book.</span></li>
+        <li><b>The gondola is the only weather-dependent thing here.</b><span>Weekdays 9–4, weekends 9–5 through 30 October. Take whichever day looks clearest and buy the ticket that morning.</span></li>
+        <li><b>Dark by six.</b><span>Anything outdoors wants to happen before four. The spa runs to 10pm, which makes it a way to end a day rather than fill one.</span></li>
+        <li><b>Whistler's lifts are shut.</b><span>Peak 2 Peak closed 7 September, the Village Gondola 21 September, ski season opens around 20 November. Nothing here depends on them.</span></li>
+        <li><b>Expect rain.</b><span>That's the trade for empty trails and shoulder rates. Waterfalls run harder and the Nordic baths are better for it.</span></li>
+      </ul>
+    </div>
+  </section>
+
+  <div class="foot">
+    <span id="status">Loading…</span>
+    <button type="button" id="breset">Clear everything</button>
+    <input type="file" id="fileinput" accept="application/json,.json" style="display:none">
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
+<script>
+const DATA = {"stops":[{"id":"porteau","n":"Porteau Cove","lat":49.5593851,"lon":-123.235425,"mins":20,"drive":75,"zone":"corridor","meta":"Open 7am–11pm · free · 20 min","body":"The first place the fjord really opens up. A pebbled beach and a pier looking straight down Howe Sound, mountains dropping into the water on both sides. There are sunken ships offshore, which is why you'll see divers suiting up in the car park in any weather.","note":"Directly on Highway 99 — costs you nothing on the drive in or out.","site":"https://bcparks.ca/porteau-cove-park/","gmap":"https://maps.google.com/?cid=4114499124742663184","photos":["https://lh3.googleusercontent.com/place-photos/AG9NLjCF_PnFiKZH2cJATntmm-xeUB5gqdeZZiQOxO7D_OeKCnG-FRIRLg22pc_YtQrh1L_ku3dNifX2fNwa9GToKlruZwYsLglJvTByRWFbkIMI4mpOqroVzUbcWuOwNKESJZoxz972_xCd4iPSfo0=s4800-w800-h600","https://lh3.googleusercontent.com/place-photos/AG9NLjDWLAWmKk5W443XHhunZjOUI338435cWiqPf414gRx4sn2c25e34S4YG5FwIQVvbBgtXxwKIRFEAYrWDObTihsfwXvwqm3nPJMZI7gzjOtcaiJQILRM49b_-sT3ysnDp2Eo86i9P73eajuJHg=s4800-w800-h600","https://lh3.googleusercontent.com/place-photos/AG9NLjAmUc_PbDf2dHcij0pNmXXKms8iBhv1Sd2eYNoA3hmbjB7WuXbxw0wlGdEAKqYwmrJRY3LRZIptbFuUfmRzubbIKpTrTPkFdDbklxdt49dOZd3sPD6uaXywS7XoVxW5_LUCwge8Y6z0HoWJqw=s4800-w800-h600"]},{"id":"britannia","n":"Britannia Mine Museum","lat":49.6236907,"lon":-123.2049731,"mins":150,"drive":70,"zone":"corridor","meta":"9–4:30 weekdays, 9–5:30 weekends · 2½ hrs","body":"Not natural beauty, but the one thing on this list that works in flat rain. A copper mine cut into the mountainside, with an underground train ride and a light show inside the mill building.","note":"Allow the full 2½ hours or skip it — the tours run on a schedule.","site":"https://www.britanniaminemuseum.ca/","gmap":"https://maps.google.com/?cid=3227589891140485724","photos":["https://lh3.googleusercontent.com/grass-cs/ACvplmP4bkvfH0ow7qp2wDQZ6l44gnm4RnxJYIfMN6LuVfmDVWaQQg4KV36BVrSbj3mGLhlV0dpacEX2U5VYPmFFIgFOgnzaZF8IEu4wzto-7Vgf6rDZM9EyATqrCV2Y1Rfen7w0eY4eBloZFlnB=s4800-w800-h600","https://lh3.googleusercontent.com/grass-cs/ACvplmP1v1ShMQ54TeLPNWtKasqX-zruaH4lGqb5bwfAslBNDAJ_mMjmR0glmSbvJiGc7rVPJuGUfgyQdy4HY16lkld_0ogUhj1Gm5Z51IJEUxk_sM-ypDDsDmqIM0JG0msECsgBrutx7RGqzmg2=s4800-w800-h600","https://lh3.googleusercontent.com/grass-cs/ACvplmNQn8yhDRBfAQZp3Xpc7wdRzy2SSpzji_zz1YYebY8wSE4IwpuLOUW1ATiWMy16pNpCktDjOBlClR7zO-k_Zk3qUfVnGXJbxztZlMUd6pVKjoITNTUPEcqnOvyo8BeFMDr-p2VFm_taZqlS=s4800-w800-h600"]},{"star":true,"id":"shannon","n":"Shannon Falls","lat":49.66558,"lon":-123.1621739,"mins":30,"drive":55,"zone":"corridor","meta":"Open 24 hrs · free · 30 min","body":"335 metres down a mossy rock face, British Columbia's third-highest waterfall, about a four-minute walk from the car park. You can scramble up the boulders toward the base if it isn't streaming wet. It shares a boundary with the Chief and sits a few hundred metres from the gondola base.","note":"Highest flow of the year is autumn and winter — late October is good timing.","site":"https://bcparks.ca/shannon-falls-park/","gmap":"https://maps.google.com/?cid=971829543124629078","photos":["https://lh3.googleusercontent.com/grass-cs/ACvplmOg-vb002lY8jjnQA2UdPBeb4cRNCvZJIHatW3BdeE2j51Iuvil_RrUMvxJ1ITy9qrwK2KhblugldM_mtzADOKY2lpY6wvP-IYgb4pMyrBaehIR33wqkRz4HzpCmWXxYPlQol0eLA=s4800-w800-h600","https://lh3.googleusercontent.com/grass-cs/ACvplmNQT_KoabLYWua_1oes_5wboSzZRwKAddv8G1sxW48hDOqQREmjGvwuJrIoIvM1yZdeYDGtsJPEY5wIpnIfsJCrJDzZxdZ835bdqybLtjwbSq5jYp5z18PD3czLM_4y9L6nFSr1XA=s4800-w800-h600","https://lh3.googleusercontent.com/grass-cs/ACvplmPvJCfrTNv6vEwOSqa5RU9Hu6_gcxXjOvP8OZeAIY0EfwunzSXBIobgwlL9bXvKm3SM9rwuKhx88qq1GmVH17cxP31zK2p7D1JKycrURyW2shfvRjwtuDRKbkozHBdzeogO8AG6=s4800-w800-h600"]},{"id":"chief","n":"Stawamus Chief","lat":49.6762232,"lon":-123.1493535,"mins":20,"drive":55,"zone":"corridor","meta":"Free · 20 min from the base","body":"A 700-metre granite dome rising straight out of the town, one of the largest lumps of exposed granite anywhere. The summit trail is relentless stairs with rope and chain sections and runs three to four hours return — not an arrival-afternoon project in the wet.","note":"Best seen from the gondola above it rather than climbed. You can ride the gondola down after the hike if you do climb it.","site":"https://www.exploresquamish.com/trails-routes/stawamus-chief","gmap":"https://maps.google.com/?cid=13151035642909530582","photos":["https://lh3.googleusercontent.com/place-photos/AG9NLjCmLQIUG8LoA7WbGA3jiRUn-jf7QNmmKaN42id9mbK--AfHsuBd9R5Pvwy-JIZwXkBScUXZ2VUe2Fg8Gat1NQfHQgok7Fgrl8qVK05mrtzFMV_pVOZ94NPGF7UCxTqXhGzqVQEHiCtlQnodSA=s4800-w800-h600","https://lh3.googleusercontent.com/place-photos/AG9NLjDnLR8DOnCe68tV9ZGvaDIwzpxnu9tPkdBzxUEcg1_nqLdi3XwXeI-7_PPyp7O60eKlxjeGOY3kCvW3FOXY7t3y_M1ecqJi5U4qdGA5xPaSEXtlpLCowSAqEPd5r2JhpzcCHGGJSh9dKgF8a_c=s4800-w800-h600","https://lh3.googleusercontent.com/place-photos/AG9NLjCchkl2jTJUCGSYEuRgqP6kuWdc2xDlrHIcSD-zPld32zKoWXOzuE96_f9TlKHYaH4Q7xn3LeyTzWY1cVxyCUsxfklQvHSc39CNnWshi8J_LWbWXopqybU0jMi7-E171Pp1E_RnGCqBXyYiug=s4800-w800-h600"]},{"star":true,"id":"gondola","n":"Sea to Sky Gondola","lat":49.675242,"lon":-123.1570148,"mins":210,"drive":60,"zone":"corridor","meta":"Mon–Fri 9–4, Sat–Sun 9–5 to 30 Oct · 3–4 hrs","body":"Ten minutes and 885 metres up, to a summit lodge with the whole of Howe Sound below and Sky Pilot standing over you. The Spirit Trail is a ten-minute walk to the suspension bridge; the Panorama Trail takes thirty to sixty and gets you the viewpoint everyone photographs. There is food at the top, so this fills a half-day comfortably.","note":"The only weather-dependent item on the list. Buy tickets the morning of, once you have seen the sky.","site":"https://www.seatoskygondola.com/","gmap":"https://maps.google.com/?cid=12085332079591147527","photos":["https://lh3.googleusercontent.com/grass-cs/ACvplmOaZYALT8pdsT1xWlMjLIif0Hd2Btb2PM4hmrRXFnhEnmyZLOQE8NqWvuwgvgipgt9xGhr1SGkKvrLgrIfxeHMKECHb00LH6g7Vff6VPHLT9qSlPdNAvl2HNDUD3n2Da8uHyYee=s4800-w800-h600","https://lh3.googleusercontent.com/grass-cs/ACvplmNum-fOO6gyQjwRb-2YvIXkSoPEDiKZMLSsDNMiUurkMUVhUOWGGsJAc3ABdrNmsMronBZhGxOyuXt36JEdJ5bdgABxSZN2GPiqFsa72KBTLsQ38QTsQpeBRYzk2-bSjsb_J6j15ofCGcr4=s4800-w800-h600","https://lh3.googleusercontent.com/grass-cs/ACvplmNQyUhtlT8Ft8hnr-H75Xx2CWdqCLNkDHHL2xS3lsZwXSQO0ad_D7F2sEU2mUcXqg6KoNMXdVYWWo-ettcbCl0MFvLwNZB6VGr3KC5sfz5yyGvSRTz4b40PK1Id3AVN8Em074g=s4800-w800-h600"]},{"star":true,"id":"tantalus","n":"Tantalus Lookout","lat":49.8463564,"lon":-123.1497092,"mins":10,"drive":40,"zone":"corridor","meta":"Open 24 hrs · free · 10 min · no toilets","body":"A signed pullout on the highway north of Squamish facing a wall of glaciated peaks across the Squamish valley. Thirty seconds from the car and most people drive straight past it.","note":"The view works best heading SOUTH — save it for the Sunday drive back down, not the Wednesday drive up. Parking is tight.","site":"","gmap":"https://maps.google.com/?cid=1734966686283845605","photos":["https://lh3.googleusercontent.com/grass-cs/ACvplmNqvZeb-VXz4EIvmOEfxclC0HYcAs-PdFb_1XvEnbq0xDxjjMWNH94l_YTxs1f1OB6vfyExs_18GHQ6cQfLXk2tM7HqzYus7K2lU4o8C9kJ9NvBx3BsI61j6yPhCzNXeGAqocb5aORJ8YI=s4800-w800-h600","https://lh3.googleusercontent.com/grass-cs/ACvplmNwM9bM5q2WjJm7zmW5bhttaE7f8Q2yU3O0V2tTn-JqiDsebDUqMYlVdFXV7zd25yUkF7DkDwQY_phlF6erH8kH7Dw82dbCddgySgrbGbPPfV-h74mlHMnEKqqSrzGjo06WbFrl=s4800-w800-h600","https://lh3.googleusercontent.com/grass-cs/ACvplmM5Y_isK0TcxlH_usXDpVG6TPSPqeTRJclz8I8unKpeWyhpAnyDSfaet-_KxssxVKUwAYjUMb_t80ZZAVnZ2cKHkOegxRIMtNnXiHV8a8q3V4NtT1_sFB163wwsNu--LjmlhaoF=s4800-w800-h600"]},{"star":true,"id":"brandywine","n":"Brandywine Falls","lat":50.0370905,"lon":-123.121985,"mins":45,"drive":20,"zone":"south","meta":"Free · 45 min","body":"Seventy metres straight off a basalt lip into a plunge pool, seen from a platform built out over the drop. A 500-metre walk from the car park, crossing a live railway line on the way. Keep going past the first platform for Daisy Lake and the Garibaldi peaks behind it.","note":"Twenty minutes south of Whistler — pairs naturally with the drive up or down.","site":"https://bcparks.ca/brandywine-falls-park/","gmap":"https://maps.google.com/?cid=12272431292922927675","photos":["https://lh3.googleusercontent.com/place-photos/AG9NLjAFtvQ1BOJDm_8n-aIuAjBsePy27f5KvylSqiZsWMmpduUn3uAz4hJIUeN0hspbiyo12IW9KMq4p8SaRgjI4yEVp_GuPP5R8bWarN0iVoZqXgoPses5xg2yrEObrxyIJgCCY0XlU3tuOZVzL2g=s4800-w800-h600","https://lh3.googleusercontent.com/place-photos/AG9NLjAG-fOjVBTh6ir3QKl-taaV6C9sPYRG-kNPr_w99xmBjR7Crlv0izFi3kWCEkDKMkuonPgzHTQI_wpcymSIiajU3ZEm6dj2AigSlJZW9LIopB8YZxx27Go3lHFg-drHHzjMkzubQ-gGJpSoAQ=s4800-w800-h600","https://lh3.googleusercontent.com/place-photos/AG9NLjDkTe_XvpDLIU1D2R6cRFoyP1P02XoG1q3fiB8xagTgpdxVv1cNo3zbG4eHMmw8zcD-U5UpMxJHkxM7PdYzQ6_oWwLETDY3JsrPYCjDSv5CxQ7tBOuhd8r-pOCNHKp32am_tZiVqroDM4c158c=s4800-w800-h600"]},{"id":"cheakamus","n":"Cheakamus Lake","lat":50.0139821,"lon":-122.9201677,"mins":180,"drive":25,"zone":"whistler","meta":"Day pass required · 3 hrs · rough access road","body":"Three kilometres each way through old growth into Garibaldi Park, ending at a long glacial lake the colour of milk and jade. Low enough at around 800 metres to stay clear of snow into November, which is rare for anything in that park.","note":"A BC Parks day pass is now required and rangers check. The access road is rough — 4WD recommended, and not for a low rental car.","site":"https://bcparks.ca/","gmap":"https://maps.google.com/?cid=12623295280402286103","photos":["https://lh3.googleusercontent.com/grass-cs/ACvplmN6xgxkN88KNTDZPC1cxfPSELAoJd3XHZ-xJB0OelMLMFPFjZErLXFlagBDiWXUhSNjfWqkDt2_sIYmzxua4Y7gUtCml0549zNdlhsRlxOjRBxGQFvOp1e3evjNtWPnUNDPPAKUhQ=s4800-w800-h600","https://lh3.googleusercontent.com/grass-cs/ACvplmMqtLbkE7EYEr2Gt6GOJBnRRICfzSOvx8at0AXr2irym524P1KCUBa6j8iWsQW9Sqs133cgdPNAWZkUq2x6xQ8nEzVyPXteJbeLtE7aA1O3j8YE0JVvA2UMnGtmzrFFF5ptoks=s4800-w800-h600","https://lh3.googleusercontent.com/grass-cs/ACvplmO7P5qqS1OAoqZG0L2D9MDjpTZ7391JwcFPBQpkJPHt7mVbrNhg1ueMq7Dfr4q7TXARKyni3GZ0cqmomKK4L5LDDQPLh4SOv157784rBr78s6zYPbwfJkLWN-Jj67p288xJXxw=s4800-w800-h600"]},{"id":"alexander","n":"Alexander Falls","lat":50.1328475,"lon":-123.1273922,"mins":45,"drive":25,"zone":"whistler","meta":"Open 24 hrs · free · 45 min","body":"Forty-three metres in three tiers, in the Callaghan Valley past the Olympic Park. The viewing deck is metres from the parking area, the road up is paved, and almost nobody bothers.","note":"The falls viewpoint itself is free. The surrounding Callaghan trail network and Olympic Park charge entry — you do not need that to see the falls. The last 100 m of road is rough.","site":"http://www.sitesandtrailsbc.ca/","gmap":"https://maps.google.com/?cid=7395815384717137404","photos":["https://lh3.googleusercontent.com/grass-cs/ACvplmOku4xrRIWgkRbbPqAKomFbUM68dEDUTeKMIhfXjjl3Y1zZv-IP5t3qejJHnOWzHHNTHQk6gf6GkkQPxoDz6s4Wm8mUpzki_sJ2POrM_vIuCN2mDxCvTl8Kka57WP4O_TVUA2dC=s4800-w800-h600","https://lh3.googleusercontent.com/grass-cs/ACvplmMG9X1QCySz8-2JCUj8DuWlV-skHZaf5hLxFVyh_7zsxxuVkqH3cv6iPZ4MAatfFlBluxXF4qbsjQg7f4XJl9VTysI6xfPjTvTWjCfAhnNz5rcrYImqWi8Mcv2f3hQYDeILHQBfrQ=s4800-w800-h600","https://lh3.googleusercontent.com/grass-cs/ACvplmONAd6b6IjqoNjS5IV65qvW6JlJ3_HbEAmdmVMM9skcnEbiv0BJwkmKWnn612g7Jvt7GEtqrqfpFoRylOZ7Yw4fsjl3N2yktKaoVpkd8Mi26Fu-7feL6C6fH-9VlCPo4H2egEKlNw=s4800-w800-h600"]},{"id":"lostlake","n":"Lost Lake","lat":50.126285,"lon":-122.93534,"mins":90,"drive":5,"zone":"whistler","meta":"Open 24 hrs · free · 1½ hrs","body":"Fifteen minutes on foot from the village, with an easy loop around the shore and a web of trails beyond it through cottonwood and creek.","note":"The most weather-proof thing on the list. Parking is limited — walk in from the village.","site":"https://www.whistler.ca/culture-recreation/parks-beaches/parks/lost-lake-park","gmap":"https://maps.google.com/?cid=17178298315222328241","photos":["https://lh3.googleusercontent.com/grass-cs/ACvplmOBYDgopAagMLT9XaTA_caetEWICERTTpn7HrRlUmlgJoXXAiRf5vt2FnubtxrgYrM2SdNHnK243vLJmNd9nV0-Qc1V_SkbjAZMT8CFLu59NpEh9v2d4TWoPVM0TgPxjA3ClURYsg=s4800-w800-h600","https://lh3.googleusercontent.com/grass-cs/ACvplmMzu93OuUd7GIG3BvbbIvcszHfmICZ2ig-XPUM-7K7Spm85EFgHb0vWPlTxAPTk-Pc6Yal5QlAyQ6yn43TKHSocLH9vk-YJhQ6Wk57TP5NF_qDZfCMJ2o8-X6wfqO9q7nZolOdY=s4800-w800-h600","https://lh3.googleusercontent.com/grass-cs/ACvplmP1hIRhhPm30bCVwha7Onwd92yNo8MbwQW2VUBkmnnfx7DeZDiwegAYeZq1cQn0vs5m-HgllFYVSjPIW7g6kSNHCE2vBlsHcxegxv2m9f2CukehqHGqLYzIlAE668V6A8KY50HX=s4800-w800-h600"]},{"id":"scandinave","n":"Scandinave Spa","lat":50.1370351,"lon":-122.9475424,"mins":210,"drive":8,"zone":"whistler","meta":"9am–10pm daily · 3–4 hrs","body":"Outdoor Nordic baths in the forest at the edge of Lost Lake — hot pools, cold plunges, eucalyptus steam rooms and saunas, with phones locked in the changing room and silence enforced on the grounds. People routinely stay five or six hours.","note":"Baths are walk-in; book massages ahead. Best in cold rain, which is most likely what you will get.","site":"https://www.scandinave.com/whistler","gmap":"https://maps.google.com/?cid=10935260234560185615","photos":["https://lh3.googleusercontent.com/grass-cs/ACvplmModgm9tcctG6dLblrw38jBgltfkFjxRJrWdjs9dJDHhB7jP0iWaaFflmDiLfSlLxceKkr1Z3kDvQtaXSaLPSDKp3Mh6eVYEPMAVNCfwLLtVnB9b0a5JCWStCyqRlFWkEhA2mL8Ag=s4800-w800-h600","https://lh3.googleusercontent.com/grass-cs/ACvplmMDxhuD1T9rQPZa-3KbNrKsXAVNK5V2UVssH0KY4les99kI842Jl2Fj2ow3ToVuzWRhrsfsNOW6mJJi0HV0vZAbzRMgbHrs1SuTdmRh0DjwVUNfuNyyPhSANWhBzMAb7-amYsyW=s4800-w800-h600","https://lh3.googleusercontent.com/grass-cs/ACvplmP2_DdE-RT3xpqEPAbzFqzFDQWxeCJkdm_fpI_kKgBut1hreSMRq60RoQPsvIHUEyZ73rfwDxcEVpV2iZYcl82gISuLrWkgEqOtik78fsp3IbLF9nOTr9Xv6OOC4pGxFQzWu1Rs=s4800-w800-h600"]},{"id":"greenlake","n":"Green Lake","lat":50.1505203,"lon":-122.9390435,"mins":15,"drive":10,"zone":"whistler","meta":"Roadside · free · 15 min","body":"Glacial rock flour holds this lake an unreal opaque turquoise even under a grey sky, which is the useful part in late October. Pullouts along the highway on the way to Pemberton.","note":"Roadside only — no benches, no facilities. On the route north, so no detour required.","site":"","gmap":"https://maps.google.com/?cid=12685315455175185844","photos":["https://lh3.googleusercontent.com/grass-cs/ACvplmMimyVR0OSgoo4ZsV5XlUbaxzBjKEHqEPhAiUj4mhaC6ydlOeG-oApIAAcrw-F9MQrK7_Q3mINcuOiMIj1TAYR5Kr8MlwHv8khPUEazrm_GatI0w7-559pdM4uUaxKYQLF0kPCk=s4800-w800-h600","https://lh3.googleusercontent.com/grass-cs/ACvplmOYHhUYUMRL_LKZp9-P-jvyoiMNLjS4UVEuM2mw4J9ktWBxxZkcVjl5219Hk7mAOCFKXC_bIOaQDiP9CK1xy1NqOGP5xvW_kC6bu6SZKT22LQWLCt23PvJp-daqylhNR9hgrzXa=s4800-w800-h600","https://lh3.googleusercontent.com/grass-cs/ACvplmMADsT43Qqh-ujBD75hmZiE0KTZqL936lRbjv2ZfrGpkjYdBpPJ6_Lu5gWNDTP4aH4nZ5yScq60b11aAj5h0227Raab-HWlq2GH_9VFcFk6eUSeW_LRqAk0sm78KdcDqX0l-g823A=s4800-w800-h600"]},{"id":"joffre","n":"Joffre Lakes","lat":50.3677702,"lon":-122.4982369,"mins":300,"drive":75,"zone":"north","star":true,"conditional":true,"meta":"Free day-use pass required · 4–6 hrs · 75 min drive","body":"Three stacked lakes, each a more absurd shade of glacial turquoise than the last, under the Matier Glacier. The lower lake is a five-minute walk from the car park. The middle one — the photograph everyone knows — is about ninety minutes up a stepped, steep trail. The upper adds another hour.","note":"Your dates work: the 2026 reconnection closures were 20–27 June and 8–30 September, and passes run to 25 October. But you MUST book a free day-use pass two days ahead at 7am Pacific, one per person — there are no walk-ups and people get turned away at the trailhead. Expect ice above the lower lake in late October; poles or spikes. No cell signal.","site":"https://bcparks.ca/joffre-lakes-park/","gmap":"https://maps.google.com/?cid=16714780172998341777","photos":["https://lh3.googleusercontent.com/place-photos/AG9NLjBvOp5qnfIx-ZFzL_6VS8izdO3hRvwB_7uQOKgcvvZzppd7X2GW5FyuFUcHTgUeJLwc5mc3g-IqrKx8F6PmzsEKw1IRiUCE0Q4Xp1USRHiq7fMkMDJ_drtSa45hfx6Zb-EQeuQDumXmJWRwVNduGeHe=s4800-w800-h600","https://lh3.googleusercontent.com/place-photos/AG9NLjDLjkgHZQnEwE4CUiEp9PVGqsMTL6Q_awNGNVAgWoYM8qQ9qwdZ_S3_fjd8hHi9d15fsVP6yxUTCwwXJ93vx2HdtH6BENFRPrGgWJvrV1-h0JBPA2INo362fS8BW6fXOhEpEE_7dwW6jr0C5A=s4800-w800-h600","https://lh3.googleusercontent.com/place-photos/AG9NLjAr5GvSASiqGxPTPbzmGMP9EFo0_CikS50nyiOB2p2yIXglcevhF5S3qE6d-_8N3HNUu4LE4dNHduwQJbKbqoxCO4Krs0CwC9EoBWg3rLu9c0v-etdy39g6qb6bVOI5NghQkqBfNwpZ7IBNwTg=s4800-w800-h600"]},{"star":true,"id":"nairn","n":"Nairn Falls","lat":50.2947804,"lon":-122.8226419,"mins":90,"drive":30,"zone":"north","meta":"Free · 1½ hrs","body":"A 1.5-kilometre, mostly level walk beside the Green River to a place where the whole river forces itself through a narrow rock slot and drops in two stages. Loud, fast and close — you stand right above it.","note":"The last stretch is bare rock above fast water and gets slick in rain. Real shoes.","site":"https://bcparks.ca/nairn-falls-park/","gmap":"https://maps.google.com/?cid=5947912440315030546","photos":["https://lh3.googleusercontent.com/place-photos/AG9NLjCZ3N3QwasTkRPCy572PzOcrd9N23W8Za3i-2S4JiDDA3TWh0DJ5XEUAAwAQx39Tg7tknC8-TmQDEltveoTVrCPwxuS0FwGGypn6a0vjHUCnkYxMpYp0BdfNK_WHFSquXPV5i-GsylMQzSheA=s4800-w800-h600","https://lh3.googleusercontent.com/place-photos/AG9NLjCEBLWbM3QsRINsQENjpRdqCOzDJsx1PqyhLCr-wzFkSSC7BGVySa1XyzkUg8By9shFEyWCdf0RtxXwgr46nwgxg0NRLwC5UxXyczYmuZuXy8jb6OCinAkS-XNq_XrOz-i28yPqfaoMBZrzAw=s4800-w800-h600","https://lh3.googleusercontent.com/place-photos/AG9NLjCtQml-yO7dcscOOmsV-FVO50lQwaTCwvXgBE-ccYitDsD-CslAtEe9bOFSKjk0N8UjwpLMrJwuzRGI1vfGSPg4hCL4UvpFyyuW9lDVGj5Vyt26ghNvFAcszEyu65ibgLoBAb-L4XG3XTC-uvA=s4800-w800-h600"]},{"id":"pemberton","n":"Mount Currie & the Pemberton Valley","lat":50.3163843,"lon":-122.7173501,"mins":60,"drive":35,"zone":"north","meta":"Free · 1 hr","body":"Past Nairn Falls the mountains open into flat potato farms with Mount Currie standing 2,600 metres straight up at the end of them. An abrupt and slightly absurd change of scale after two days of forest, and there is decent coffee in the village.","note":"Thirty-five minutes from Whistler. Combine with Nairn Falls — they are five minutes apart.","site":"","gmap":"https://maps.google.com/?cid=11226165198470566380","photos":["https://lh3.googleusercontent.com/grass-cs/ACvplmMIKsBKWnT855nfDx1vNBD66bgMx4f8tkTpPu3lI1X5QYtIye64Uhf6fDWP3ds-tu--F2KTXCmZSJAPUGPESqWonld-u00TzQnkRxleGk5GbSDPxq3fpEos2qTv9s0JsxmxblJJ=s4800-w800-h600","https://lh3.googleusercontent.com/grass-cs/ACvplmNvrUysgw2S1JfJOjk9hVxHICKW_nS_kEtF9A9J5odEcRQ9lFhp5bjnAVic0A8L_Vn9n-feCI7VgGvS2gmIu9bHjFUejZqUcm29ddrsxOjWsuLm8iAMwG7vjslDnPOeUoxseLjz=s4800-w800-h600","https://lh3.googleusercontent.com/grass-cs/ACvplmOvfA-NAauL-_70j4WP9jCcNcJ22iruB8_Kt07i4TplTVDWv_gMbbQLz8SnTUe-2a6KciXQM4IR1lO5667cvPxvs1Jk-GtlbWTOeh6_tWdJpLJa3uRhoOLve_IGUCtrm8ui5Dxh=s4800-w800-h600"]}],"anchors":[{"n":"Whistler Village","lat":50.1163,"lon":-122.9574,"sub":"Your base — four nights"},{"n":"Vancouver Airport (YVR)","lat":49.1967,"lon":-123.1815,"sub":"In Wed morning, out Sun late"},{"n":"Squamish","lat":49.7016,"lon":-123.1558,"sub":"Halfway — fuel and food"}],"days":[{"id":"wed","name":"Wed 21","tag":"Land, drive up","color":"#2E5B6B","fixed":true},{"id":"thu","name":"Thu 22","tag":"Open","color":"#4F6A45","fixed":false},{"id":"fri","name":"Fri 23","tag":"Open","color":"#B4821F","fixed":false},{"id":"sat","name":"Sat 24","tag":"Open","color":"#9C4E2B","fixed":false},{"id":"sun","name":"Sun 25","tag":"Drive down, fly","color":"#5C6B6E","fixed":true}],"checks":[{"id":"c1","t":"Book four nights in Whistler","why":"Late October is the cheapest, emptiest week of its year."},{"id":"c2","t":"Reserve the car with winter tires stated explicitly","why":"Required by law on Highway 99 from 1 October. Get it in writing — YVR desks do not assign them by default."},{"id":"c3","t":"Confirm the YVR drop-off desk is open for a late Sunday flight","why":""},{"id":"c4","t":"Book a massage at Scandinave if you want one","why":"The baths are walk-in; treatments are not."},{"id":"c5","t":"Buy a BC Parks day pass if you want Cheakamus Lake","why":"Rangers check, and the access road needs clearance."},{"id":"c6","t":"Pack for rain, not for snow","why":"Everything on this list sits below 900 metres."},{"id":"c7","t":"Download offline maps for the Pemberton stretch","why":"Cell coverage thins out north of Whistler."}]};
+const STOPS=DATA.stops, DAYS=DATA.days, ANCHORS=DATA.anchors, CHECKS=DATA.checks;
+const DAYC=Object.fromEntries(DAYS.map(d=>[d.id,d.color]));
+const ZONES=[['all','All 15'],['star','The six unmissable'],['corridor','On the airport drive'],['south','Just south'],['whistler','Around Whistler'],['north','Toward Pemberton'],['todo','Undecided only']];
+
+let state={assign:{},notes:{},checks:{}}, selected=null, filter='all', markers={}, map=null;
+const $=s=>document.querySelector(s);
+const el=(t,c,x)=>{const e=document.createElement(t); if(c)e.className=c; if(x!=null)e.textContent=x; return e;};
+const hrs=m=>m>=60?(m%60?Math.floor(m/60)+'h'+(m%60):Math.floor(m/60)+'h'):m+'m';
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+/* ---------- storage ---------- */
+function save(){
+  try{localStorage.setItem('seatosky',JSON.stringify(state));
+      $('#status').textContent='Saved in this browser';}
+  catch(e){$('#status').textContent='This browser won\u2019t save from a local file \u2014 use "Save plan file"';}
+}
+function load(){
+  try{const r=localStorage.getItem('seatosky'); if(r) return JSON.parse(r);}catch(e){}
+  return null;
+}
+
+/* ---------- map ---------- */
+function buildMap(){
+  map=L.map('map',{scrollWheelZoom:false}).setView([49.95,-122.95],9);
+  const esri='https://server.arcgisonline.com/ArcGIS/rest/services/';
+  const layers={
+    'Terrain': L.tileLayer(esri+'World_Topo_Map/MapServer/tile/{z}/{y}/{x}',
+      {maxZoom:17,attribution:'Tiles &copy; Esri'}),
+    'Satellite': L.tileLayer(esri+'World_Imagery/MapServer/tile/{z}/{y}/{x}',
+      {maxZoom:17,attribution:'Tiles &copy; Esri, Maxar, Earthstar Geographics'}),
+    'Relief': L.tileLayer(esri+'World_Shaded_Relief/MapServer/tile/{z}/{y}/{x}',
+      {maxZoom:13,attribution:'Tiles &copy; Esri'}),
+    'Plain': L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
+      {maxZoom:19,subdomains:'abcd',attribution:'&copy; OpenStreetMap, &copy; CARTO'})
+  };
+  layers['Terrain'].addTo(map);
+  L.control.layers(layers,null,{collapsed:false}).addTo(map);
+  let tileFails=0;
+  Object.values(layers).forEach(t=>t.on('tileerror',()=>{
+    if(++tileFails===8){
+      const n=document.getElementById('tilewarn');
+      if(n) n.hidden=false;
+    }
+  }));
+
+  ANCHORS.forEach(a=>{
+    L.marker([a.lat,a.lon]).addTo(map)
+     .bindPopup('<b>'+esc(a.n)+'</b><em>'+esc(a.sub)+'</em>');
+  });
+
+  STOPS.forEach(s=>{
+    const m=L.circleMarker([s.lat,s.lon],{radius:s.star?10:7,weight:s.star?3:2,color:s.star?'#B4821F':'#0E1E22',fillColor:'#fff',fillOpacity:1}).addTo(map);
+    m.bindPopup(
+      '<img src="'+s.photos[0]+'" alt="" loading="lazy">'+
+      '<b>'+esc(s.n)+(s.star?' \u2605':'')+'</b><em>'+esc(s.meta)+'</em>'+
+      '<a href="'+s.gmap+'" target="_blank" rel="noopener">Open in Google Maps</a>'
+    );
+    m.on('click',()=>{select(s.id,true)});
+    markers[s.id]=m;
+  });
+
+  const lg=$('#legend'); lg.innerHTML='';
+  DAYS.concat([{name:'undecided',color:'transparent'}]).forEach(d=>{
+    const sp=el('span',null,d.name);
+    const i=el('i'); i.style.background=d.color;
+    if(d.color==='transparent'){i.style.border='1px solid var(--line-firm)'}
+    sp.insertBefore(i,sp.firstChild); lg.appendChild(sp);
+  });
+  setTimeout(()=>map.invalidateSize(),200);
+}
+function paintMarkers(){
+  STOPS.forEach(s=>{
+    const d=state.assign[s.id];
+    const c=(d&&d!=='skip')?DAYC[d]:null;
+    const m=markers[s.id]; if(!m) return;
+    m.setStyle({
+      fillColor:c||'#ffffff',
+      color:selected===s.id?'#B4821F':(s.star?'#B4821F':'#0E1E22'),
+      weight:selected===s.id?4:(s.star?3:2),
+      fillOpacity:d==='skip'?.3:1,
+      radius:selected===s.id?12:(s.star?10:7)
+    });
+  });
+}
+
+/* ---------- cards ---------- */
+function buildFilters(){
+  const f=$('#filters'); f.innerHTML='';
+  ZONES.forEach(([k,label])=>{
+    const b=el('button',null,label); b.type='button';
+    b.setAttribute('aria-pressed',filter===k);
+    b.onclick=()=>{filter=k;buildFilters();renderList();};
+    f.appendChild(b);
+  });
+}
+function renderList(){
+  const L0=$('#list'); L0.innerHTML='';
+  STOPS.forEach(s=>{
+    const d=state.assign[s.id];
+    const show = filter==='all' ? true
+               : filter==='todo' ? !d
+               : filter==='star' ? !!s.star
+               : s.zone===filter;
+    const a=el('article','stop'+(s.star?' star':'')+(selected===s.id?' sel':'')+(show?'':' hidden'));
+    a.id='s-'+s.id;
+
+    const head=el('div','sthead');
+    const dot=el('div','stdot'+((d&&d!=='skip')?'':' un'));
+    dot.style.setProperty('--sc',(d&&d!=='skip')?DAYC[d]:'transparent');
+    head.appendChild(dot);
+    const tt=el('div','sttitle');
+    const h3=el('h3'); h3.appendChild(document.createTextNode(s.n));
+    if(s.star) h3.appendChild(el('span','badge','Don\u2019t miss'));
+    tt.appendChild(h3);
+    tt.appendChild(el('div','stmeta',s.meta+' \u00b7 '+s.drive+' min from Whistler'));
+    head.appendChild(tt); a.appendChild(head);
+
+    const strip=el('div','strip');
+    s.photos.forEach(u=>{
+      const img=document.createElement('img');
+      img.src=u; img.alt=s.n; img.loading='lazy'; img.referrerPolicy='no-referrer';
+      img.onerror=()=>img.style.visibility='hidden';
+      img.onclick=e=>{e.stopPropagation();lightbox(u,s.n)};
+      strip.appendChild(img);
+    });
+    a.appendChild(strip);
+
+    a.appendChild(el('p','stbody',s.body));
+    if(s.note) a.appendChild(el('p','stnote',s.note));
+
+    const row=el('div','strow');
+    const seg=el('div','seg');
+    DAYS.concat([{id:'skip',name:'Skip',color:'#5C6B6E'}]).forEach(day=>{
+      const b=el('button',null,day.name==='Skip'?'Skip':day.name.split(' ')[0]);
+      b.type='button'; b.style.setProperty('--bc',day.color);
+      b.setAttribute('aria-pressed',d===day.id);
+      b.title=day.name==='Skip'?'Not doing this one':'Put this on '+day.name;
+      b.onclick=()=>{
+        if(state.assign[s.id]===day.id) delete state.assign[s.id];
+        else state.assign[s.id]=day.id;
+        save(); renderAll();
+      };
+      seg.appendChild(b);
+    });
+    row.appendChild(seg);
+    const lk=el('div','links');
+    if(s.site){const x=el('a',null,'Official site');x.href=s.site;x.target='_blank';x.rel='noopener';lk.appendChild(x);}
+    const g=el('a',null,'Google Maps');g.href=s.gmap;g.target='_blank';g.rel='noopener';lk.appendChild(g);
+    const dir=el('a',null,'Directions');
+    dir.href='https://www.google.com/maps/dir/?api=1&destination='+s.lat+','+s.lon;
+    dir.target='_blank';dir.rel='noopener';lk.appendChild(dir);
+    row.appendChild(lk); a.appendChild(row);
+
+    const ta=document.createElement('textarea');
+    ta.placeholder='Your notes on '+s.n+'\u2026';
+    ta.value=state.notes[s.id]||'';
+    ta.oninput=()=>{state.notes[s.id]=ta.value;save()};
+    a.appendChild(ta);
+
+    a.addEventListener('click',e=>{
+      if(e.target.closest('button,a,textarea,img')) return;
+      select(s.id,false);
+    });
+    L0.appendChild(a);
+  });
+}
+function select(id,fromMap){
+  selected = selected===id?null:id;
+  paintMarkers(); renderList();
+  if(selected){
+    const n=document.getElementById('s-'+selected);
+    if(n && fromMap) n.scrollIntoView({block:'center'});
+    if(!fromMap && map){
+      const s=STOPS.find(x=>x.id===selected);
+      map.panTo([s.lat,s.lon]);
+      markers[selected].openPopup();
+    }
+  }
+}
+function lightbox(src,alt){
+  const b=el('div','lightbox');
+  const i=document.createElement('img'); i.src=src; i.alt=alt||''; i.referrerPolicy='no-referrer';
+  b.appendChild(i);
+  const close=()=>{b.remove();document.removeEventListener('keydown',k)};
+  const k=e=>{if(e.key==='Escape')close()};
+  b.onclick=close; document.addEventListener('keydown',k);
+  document.body.appendChild(b);
+}
+
+/* ---------- board ---------- */
+function renderDays(){
+  const box=$('#days'); box.innerHTML='';
+  DAYS.forEach(day=>{
+    const mine=STOPS.filter(s=>state.assign[s.id]===day.id);
+    const tot=mine.reduce((x,s)=>x+s.mins,0);
+    const d=el('div','day'+(day.fixed?' fixed':''));
+    d.style.setProperty('--dc',day.color);
+    const h=el('div','dh');
+    h.appendChild(el('span','dn',day.name));
+    h.appendChild(el('span','dt',tot?hrs(tot):''));
+    d.appendChild(h);
+    d.appendChild(el('div','dtag',day.tag));
+    const ul=document.createElement('ul');
+    if(!mine.length){
+      ul.appendChild(el('li','empty',day.fixed?'Driving day — add what you pass':'Nothing yet'));
+    } else mine.forEach(s=>{
+      const li=el('li',s.star?'star':null,s.n);
+      li.onclick=()=>select(s.id,true);
+      ul.appendChild(li);
+    });
+    d.appendChild(ul); box.appendChild(d);
+  });
+  $('#nchosen').textContent=STOPS.filter(s=>state.assign[s.id]&&state.assign[s.id]!=='skip').length+' of '+STOPS.length;
+  $('#ntodo').textContent=STOPS.filter(s=>!state.assign[s.id]).length;
+}
+function renderChecks(){
+  const ul=$('#check'); ul.innerHTML='';
+  CHECKS.forEach(c=>{
+    const li=el('li',state.checks[c.id]?'done':'');
+    const cb=document.createElement('input'); cb.type='checkbox'; cb.id='k-'+c.id;
+    cb.checked=!!state.checks[c.id];
+    cb.onchange=()=>{state.checks[c.id]=cb.checked;save();renderChecks()};
+    const lb=document.createElement('label'); lb.htmlFor='k-'+c.id;
+    lb.appendChild(document.createTextNode(c.t));
+    if(c.why) lb.appendChild(el('span','why',c.why));
+    li.appendChild(cb); li.appendChild(lb); ul.appendChild(li);
+  });
+}
+function renderAll(){renderDays();renderList();paintMarkers()}
+
+/* ---------- tools ---------- */
+$('#bexport').onclick=()=>{
+  const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='sea-to-sky-plan.json'; a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+};
+$('#bimport').onclick=()=>$('#fileinput').click();
+$('#fileinput').onchange=e=>{
+  const f=e.target.files[0]; if(!f) return;
+  const r=new FileReader();
+  r.onload=()=>{
+    try{
+      const d=JSON.parse(r.result);
+      state={assign:d.assign||{},notes:d.notes||{},checks:d.checks||{}};
+      save(); renderAll(); renderChecks();
+      $('#status').textContent='Plan loaded';
+    }catch(err){$('#status').textContent='That file didn\u2019t parse as a saved plan'}
+  };
+  r.readAsText(f);
+};
+$('#bprint').onclick=()=>window.print();
+$('#breset').onclick=()=>{
+  if(!confirm('Clear every day assignment, note and tick?')) return;
+  state={assign:{},notes:{},checks:{}}; save(); renderAll(); renderChecks();
+};
+$('#btheme').onclick=()=>{
+  const dark=document.documentElement.getAttribute('data-theme')==='dark';
+  document.documentElement.setAttribute('data-theme',dark?'light':'dark');
+  $('#btheme').textContent=dark?'Dark':'Light';
+  try{localStorage.setItem('seatosky.theme',dark?'light':'dark')}catch(e){}
+};
+
+/* ---------- boot ---------- */
+try{
+  const t=localStorage.getItem('seatosky.theme');
+  if(t){document.documentElement.setAttribute('data-theme',t);$('#btheme').textContent=t==='dark'?'Light':'Dark';}
+  else if(window.matchMedia('(prefers-color-scheme:dark)').matches){
+    document.documentElement.setAttribute('data-theme','dark');$('#btheme').textContent='Light';
+  }
+}catch(e){}
+
+const cached=load();
+if(cached) state=Object.assign({assign:{},notes:{},checks:{}},cached);
+buildMap(); buildFilters(); renderAll(); renderChecks();
+$('#status').textContent = cached ? 'Plan restored from this browser' : 'Nothing saved yet';
+</script>
+</body>
+</html>
